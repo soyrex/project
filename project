@@ -1,0 +1,121 @@
+#!/usr/bin/python
+
+import os,sys,re
+from os.path import expanduser
+from termcolor import colored
+import shutil
+
+# def terminal_size():
+    # import fcntl, termios, struct
+    # h, w, hp, wp = struct.unpack('HHHH',
+        # fcntl.ioctl(0, termios.TIOCGWINSZ,
+        # struct.pack('HHHH', 0, 0, 0, 0)))
+    # return w, h
+
+# (w,h) = terminal_size()
+
+def wipe():
+    os.system('cls' if os.name=='nt' else 'clear') 
+    print(chr(27) + "[2J")
+
+def div(): 
+    print colored('-------------------------','white')
+
+
+def loadConfig():
+    f = open('%s/.proj.config' %(expanduser("~")))
+    conf = f.readlines()
+    config = {}
+    for line in conf:
+        (name,path,date) = line.strip().split('::')
+        config[name.lower()] = {'name':name,'path':path,'date':date}
+
+    return config
+
+def list(): 
+    conf = loadConfig()
+    if len(conf) > 0:
+        wipe()
+        print 
+        print colored('Choose a project:','blue')
+        div()
+        x = 0
+        for name, projectData in conf.iteritems():
+            opt = (colored(x+1,'white')+': '+ colored(projectData['name'],'red'))
+            print opt
+            x+=1
+
+        div()
+
+        choice = input('Project: ')
+        choice = choice-1
+        name = getChoice(choice)
+        loadProject(name)
+
+def getChoice(choice): 
+    conf = loadConfig()
+    choices = []
+    for name, projectData in conf.iteritems():
+        choices.append(name)
+
+    return choices[choice]
+
+def loadProject(name):
+    wipe()
+    conf = loadConfig()
+    project = conf[name]
+    os.chdir(project['path'])
+    projectName = colored('%s' % project['name'],'yellow')
+    print 
+    print "Opening %s... " % projectName
+    pathStr = project['path']
+    pathStr2 = pathStr
+    if pathStr[-1] == '/':
+        pathStr2 = pathStr[0:-1]
+    pathStr = pathStr.replace('/','\\\\/')
+    pathStr2 = pathStr2.replace('/','\\\\/')
+    pathName = colored('/\$( pwd | sed \'s/%s//\' | sed \'s/%s//\')' % (pathStr,pathStr2),'red')
+    pr = ('\r\n'+colored('[','white')+' %s : %s : %s '+colored(']','white')+' \r\n\r\n\$ ') % (colored('\@','green'), projectName, pathName)
+    os.system('ENV PS1=\"%s\" /bin/bash ' % pr)
+
+
+try:
+    if len(sys.argv) > 1:
+        command = sys.argv[1]
+
+        if command == 'list' or command == '-l':
+            list()
+
+        elif command == 'add' or command == '-a':
+            print 
+            print colored('Adding a project:','blue')
+            newname = raw_input('Enter project name: ')
+            newpath = raw_input('Enter project path (enter for current dir): ')
+
+            if newpath.strip() == '':
+                newpath = os.getcwd()
+
+            projEntry = "%s::%s::\r\n" % (newname, newpath)
+            print projEntry
+
+            o = open('%s/.proj.config' % (expanduser("~")),'a')
+            o.write(projEntry)
+            o.close()
+
+            loadProject(newname)
+
+        elif command.isdigit():
+            x = int(command)-1
+            name = getChoice(x)
+            loadProject(name)
+
+        else:
+            loadProject(command)
+            
+
+    else: 
+        list()
+
+except KeyboardInterrupt:
+    print colored("\r\n\r\nok. bye.\r\n\r\n",'green')
+

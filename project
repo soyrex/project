@@ -118,4 +118,6 @@ try:
 
 except KeyboardInterrupt:
     print colored("\r\n\r\nok. bye.\r\n\r\n",'green')
+except Exception: 
+    print colored("\r\nSomething went wrong. Sorry :(\r\n\r\n",'red')
 

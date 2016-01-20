@@ -15,10 +15,10 @@ import shutil
 # (w,h) = terminal_size()
 
 def wipe():
-    os.system('cls' if os.name=='nt' else 'clear') 
+    os.system('cls' if os.name=='nt' else 'clear')
     print(chr(27) + "[2J")
 
-def div(): 
+def div():
     print colored('-------------------------','white')
 
 
@@ -32,11 +32,11 @@ def loadConfig():
 
     return config
 
-def list(): 
+def list():
     conf = loadConfig()
     if len(conf) > 0:
         wipe()
-        print 
+        print
         print colored('Choose a project:','blue')
         div()
         x = 0
@@ -52,7 +52,7 @@ def list():
         name = getChoice(choice)
         loadProject(name)
 
-def getChoice(choice): 
+def getChoice(choice):
     conf = loadConfig()
     choices = []
     for name, projectData in conf.iteritems():
@@ -66,7 +66,7 @@ def loadProject(name):
     project = conf[name]
     os.chdir(project['path'])
     projectName = colored('%s' % project['name'],'yellow')
-    print 
+    print
     print "Opening %s... " % projectName
     pathStr = project['path']
     pathStr2 = pathStr
@@ -76,7 +76,7 @@ def loadProject(name):
     pathStr2 = pathStr2.replace('/','\\\\/')
     pathName = colored('/\$( pwd | sed \'s/%s//\' | sed \'s/%s//\')' % (pathStr,pathStr2),'red')
     pr = ('\r\n'+colored('[','white')+' %s : %s : %s '+colored(']','white')+' \r\n\r\n\$ ') % (colored('\@','green'), projectName, pathName)
-    os.system('ENV PS1=\"%s\" /bin/bash ' % pr)
+    os.system('ENV PS1=\"%s\" PROJHOME=\"%s\" /bin/bash -l ' % (pr,project['path']))
 
 
 try:
@@ -87,7 +87,7 @@ try:
             list()
 
         elif command == 'add' or command == '-a':
-            print 
+            print
             print colored('Adding a project:','blue')
             newname = raw_input('Enter project name: ')
             newpath = raw_input('Enter project path (enter for current dir): ')
@@ -111,13 +111,13 @@ try:
 
         else:
             loadProject(command)
-            
 
-    else: 
+
+    else:
         list()
 
 except KeyboardInterrupt:
     print colored("\r\n\r\nok. bye.\r\n\r\n",'green')
-except Exception: 
+except Exception:
     print colored("\r\nSomething went wrong. Sorry :(\r\n\r\n",'red')
 
